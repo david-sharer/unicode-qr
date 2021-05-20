@@ -1,0 +1,181 @@
+<html>
+
+<head>
+  <title>QR Code Generator</title>
+
+  <style>
+    #qrcode, #qrcode-discord {
+      margin-top: 15px;
+      line-height: 1em;
+      letter-spacing: -.1em;
+      white-space: pre;
+    }
+
+    #qrcode-discord {
+      margin-top: 10rem;
+      color: transparent;
+    }
+
+    #qrcode {
+      color: black;
+      user-select: all;
+    }
+
+    html {
+      width: 100%;
+      font-family: sans-serif;
+    }
+
+    body {
+      max-width: 768px;
+      margin: 5rem auto;
+      text-align: center;
+    }
+
+    p {
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    input {
+      width: 50%;
+      text-align: center;
+    }
+
+    .qr-center {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Unicode QR Code Generator</h1>
+  <section>
+    <p>This tool generates QR codes that can be readily embedded in text applications like Discord.</p>
+  </section>
+  <div>
+    <input id="text" type="text" value="https://david-sharer.github.io/unicode-qr/"/>
+  </div>
+  <br />
+  <div>
+    <button id="copy">Copy to Clipboard</button>
+    <button id="copy-discord">Copy for Discord</button>
+  </div>
+  <div class="qr-center">
+    <pre id="qrcode">QR code will appear here</pre>
+    <pre id="qrcode-discord">QR code will appear here</pre>
+  </div>
+
+
+  <script src='https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+
+  <script id="rendered-js">
+    function makeCode() {
+      var elText = document.getElementById("text");
+
+      if (!elText.value) {
+        return;
+      }
+
+      const qr = QRCode.create(elText.value)
+      const pattern = qr.modules.data;
+      console.log({ pattern })
+      // const emojiPattern = new Array(...pattern).map(entry => entry ? "██" : "░░");
+      // console.log({emojiPattern});
+      const width = Math.sqrt(pattern.length);
+      const rows = [];
+      for (let row = 0; row < width; row += 2) {
+        const rowTop = pattern.slice(row * width, (row + 1) * width);
+        const rowBot = pattern.slice((row + 1) * width, (row + 2) * width);
+        const newRow = [];
+        for (let col = 0; col < width; col++) {
+          const top = rowTop[col];
+          const bot = rowBot[col];
+          if (top && bot) {
+            newRow.push("█");
+            continue;
+          }
+
+          if (top && !bot) {
+            newRow.push("▀");
+            continue;
+          }
+
+          if (!top && bot) {
+            newRow.push("▄");
+            continue;
+          }
+
+          if (!top && !bot) {
+            newRow.push(" ");
+            continue;
+          }
+
+          newRow.push("BROKEN");
+        }
+
+        rows.push(newRow);
+      }
+
+      console.log({ rows });
+
+      const final = rows.map(row => row.join('')).join("\n")
+      console.log(final)
+
+      var elCode = document.getElementById("qrcode");
+      elCode.innerText = final;
+      var elCodeDiscord = document.getElementById("qrcode-discord");
+      elCodeDiscord.innerText = "```\n" + final + "\n```";
+    }
+
+    $("#text").val(window.location);
+    makeCode();
+
+    $("#text")
+      .on("blur", function () {
+        makeCode();
+      })
+      .on("keydown", function (e) {
+        if (e.keyCode == 13) {
+          makeCode();
+        }
+      })
+      .on("keyup", function (e) {
+        makeCode();
+      });
+
+    function copy(targetSelector) {
+      // Select the email link anchor text  
+      var content = document.querySelector(targetSelector);
+      var range = document.createRange();
+      range.selectNode(content);
+      window.getSelection().addRange(range);
+
+      try {
+        // Now that we've selected the anchor text, execute the copy command  
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copy email command was ' + msg);
+      } catch (err) {
+        console.log('Oops, unable to copy');
+      }
+
+      // Remove the selections - NOTE: Should use
+      // removeRange(range) when it is supported  
+      window.getSelection().removeAllRanges();
+    }
+
+    document.querySelector('#copy').addEventListener('click', function (event) {
+      copy("#qrcode")
+    });
+    document.querySelector('#copy-discord').addEventListener('click', function (event) {
+      copy("#qrcode-discord")
+    });
+  </script>
+</body>
+
+</html>

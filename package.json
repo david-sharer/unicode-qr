@@ -1,0 +1,14 @@
+{
+  "name": "unicode-qr",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/david-sharer/unicode-qr.git",
+  "author": "David S <github@davidsharer.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "http-server"
+  },
+  "dependencies": {
+    "http-server": "^0.12.3"
+  }
+}
